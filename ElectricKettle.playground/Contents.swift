@@ -17,10 +17,17 @@ import UIKit
 PlaygroundPage.current.needsIndefiniteExecution = true
 
 
+// protocolはインターフェース
+protocol MessageDelegate {
+    func finish() -> Void
+}
+
 class Alarm {
     var timer: Timer?
     var count: Int = 0
     var limit: Int = 5
+    // MessageDelegate型の変数を用意、nilを許容するから?をつける
+    var delegate: MessageDelegate?
     
     func start() {
         // 任意の箇所でTimerクラスを使用して1秒毎にcountup()メソッドを実行させるタイマーをセット
@@ -43,6 +50,7 @@ class Alarm {
             print("スイッチOFF(カウントをストップします)")
             // タイマーを止める
             timer?.invalidate()
+            delegate?.finish()
         }
     }
 }
@@ -60,7 +68,13 @@ class ElectricKettle {
     func boilWater(liter: Int, concent: Bool) -> Bool{
         
         // コンセントさしてないとき
-        if !concent {
+//        if !concent {
+//            print("コンセントさしてないよ")
+//            return false
+//        }
+        
+        // 早期リターン。上のif文と同じ意味
+        guard concent else {
             print("コンセントさしてないよ")
             return false
         }
@@ -77,28 +91,37 @@ class ElectricKettle {
         let scaleWater800 = 800
         let scaleWater1000 = 1000
         
-        if liter > 800 && liter <= 1000 {
+        if liter > scaleWater800 && liter <= scaleWater1000 {
             alarm.limit = 5
-        }else if liter > 500 && liter <= 800 {
+        }else if liter > scaleWater500 && liter <= scaleWater800 {
             alarm.limit = 4
-        }else if liter > 300 && liter <= 500 {
+        }else if liter > scaleWater300 && liter <= scaleWater500 {
             alarm.limit = 3
         }else{
             alarm.limit = 1
         }
         
+        // selfでElectricKettle自身をセットする。忘れがち！！
+        alarm.delegate = self
         alarm.start()
-        
-        // 🌟ここ🌟　アラームが止まった後に出力したいが、処理が先に進んでいる
-        print("スイッチOFF")
-        print("お湯が沸きました")
-                    
+                            
         return true
     }
     
 }
 
+// Extensionはクラスの拡張。MessateDelegateを準拠（継承みたいな）させる。
+// MessageDelegateの処理しか書かれてないよ、ということがわかりやすくなる
+extension ElectricKettle: MessageDelegate {
+    func finish() {
+        print("スイッチOFF")
+        print("お湯が沸きました")
+
+    }
+    
+}
+
 let electricKettle = ElectricKettle()
-let isSuccess = electricKettle.boilWater(liter: 900, concent: true)
+let isSuccess = electricKettle.boilWater(liter: 600, concent: true)
 
 print(isSuccess)
