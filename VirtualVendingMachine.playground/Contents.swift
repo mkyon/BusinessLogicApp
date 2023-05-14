@@ -131,24 +131,29 @@ class VirtualVendingMachine {
     // お釣りが足りるか確認する
     func calChange(change: Int) -> Bool{
         // 必要枚数
-        var needYen50 = 0
-        var needYen10 = 0
-        // 50円玉
-        needYen50 = change / 50
-        if needYen50 > changeStock50{
-            needYen10 = (needYen50 - changeStock50) * 5
-            needYen50 = changeStock50
+        var neededChange50Yen = 0
+        var neededChange10Yen = 0
+
+        let yen50 = 50
+        let yen10 = 10
+        // お釣りを50円で割り、必要な枚数を求める
+        neededChange50Yen = change / yen50
+        
+        if neededChange50Yen > changeStock50{
+            neededChange10Yen = (neededChange50Yen - changeStock50) * 5 // 足らない50円玉を10円換算する
+            neededChange50Yen = changeStock50
         }
-        // 10円玉
-        needYen10 += (change % 50) / 10
-        if needYen10 > changeStock10 {
+        // 必要な10円玉の枚数を求める
+        // お釣りを50円で割ったあまりを10円で割り、10円玉の必要枚数を求める
+        neededChange10Yen += (change % yen50) / yen10
+        if neededChange10Yen > changeStock10 {
             // お釣りが足らない
             return false
         }
         
         // お釣りのストックを減らす
-        changeStock50 -= needYen50
-        changeStock10 -= needYen10
+        changeStock50 -= neededChange50Yen
+        changeStock10 -= neededChange10Yen
         
         return true
     }
